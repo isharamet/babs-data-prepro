@@ -26,31 +26,29 @@
           (.newLine wrtr))))))
 
 (defn strip-quotes
-  [s]
-  (str/replace s "\"" ""))
+  [quoted]
+  (s/replace quoted "\"" ""))
 
 (defn process-file
   [file-path file-info]
   (let [{:keys [file-type date-pos date-format]} file-info
         formatter (f/formatter date-format)]
     (with-open [rdr (clojure.java.io/reader file-path)]
-      (reduce
-        (fn [acc line]
-          (do
-            (println line)
-            (let [lines (:lines acc)
-                  prev-date (:prev-date acc)
-                  xs (s/split line #",")
-                  date (f/unparse default-formatter
-                                  (f/parse formatter
-                                           (strip-quotes (nth xs date-pos))))]
-              (if (and (not (nil? prev-date)) (not= prev-date date))
-                (do
-                  (write-file lines file-type prev-date)
-                  {:lines [line] :prev-date date})
-                {:lines (conj lines line) :prev-date date}))))
-        {:lines [] :prev-date nil}
-        (rest (line-seq rdr))))))
+      (let [res (reduce
+                  (fn [acc line]
+                    (let [lines (:lines acc)
+                          prev-date (:prev-date acc)
+                          xs (s/split line #",")
+                          raw-date (strip-quotes (nth xs date-pos))
+                          date (f/unparse default-formatter (f/parse formatter raw-date))]
+                      (if (and (not (nil? prev-date)) (not= prev-date date))
+                        (do
+                          (write-file lines file-type prev-date)
+                          {:lines [line] :prev-date date})
+                        {:lines (conj lines line) :prev-date date})))
+                  {:lines [] :prev-date nil}
+                  (rest (line-seq rdr)))]
+        (write-file (:lines res) file-type (:prev-date))))))
 
 (defn walk-files
   [dir]
