@@ -9,8 +9,10 @@
 
 (def files
   [{:file-mask #".+_station_data.csv" :file-type "station-data" :date-pos 6 :date-format "MM/dd/yyyy"}
-   {:file-mask #".+_status_data.csv" :file-type "status-data" :date-pos 3 :date-format "yyyy-MM-dd HH:mm:ss"}
-   {:file-mask #".+_trip_data.csv" :file-type "trip-data" :date-pos 2 :date-format "yyyy/MM/dd HH:mm:ss"}
+   {:file-mask #"201402_status_data.csv" :file-type "status-data" :date-pos 3 :date-format "yyyy/MM/dd HH:mm:ss"}
+   {:file-mask #"201508_status_data.csv" :file-type "status-data" :date-pos 3 :date-format "yyyy-MM-dd HH:mm:ss"}
+   {:file-mask #"201608_status_data.csv" :file-type "status-data" :date-pos 3 :date-format "MM/dd/yyyy HH:mm:ss"}
+   {:file-mask #".+_trip_data.csv" :file-type "trip-data" :date-pos 2 :date-format "MM/dd/yyyy HH:mm"}
    {:file-mask #".+_weather_data.csv" :file-type "weather-data" :date-pos 0 :date-format "MM/dd/yyyy"}])
 
 (defn write-file
@@ -48,14 +50,16 @@
                         {:lines (conj lines line) :prev-date date})))
                   {:lines [] :prev-date nil}
                   (rest (line-seq rdr)))]
-        (write-file (:lines res) file-type (:prev-date))))))
+        (write-file (:lines res) file-type (:prev-date res))))))
 
 (defn walk-files
   [dir]
   (doseq [file (fs/list-dir dir)
           file-info files]
     (if (re-matches (:file-mask file-info) (.getName file))
-      (process-file (.getPath file) file-info))))
+      (do
+        (println "Processing " file)
+        (process-file (.getPath file) file-info)))))
 
 (defn -main
   [dir & args]
