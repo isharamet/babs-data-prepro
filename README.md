@@ -1,14 +1,9 @@
 # babs-data-prepro
 
-A Clojure library designed to ... well, that part is up to you.
+Simple preprocessing for [Bay Area Bike Share](http://www.bayareabikeshare.com/open-data) trips dataset: splits data by day and outputs to the folder specific for data type. 
 
 ## Usage
 
-FIXME
-
-## License
-
-Copyright © 2017 FIXME
-
-Distributed under the Eclipse Public License either version 1.0 or (at
-your option) any later version.
+```bash
+lein run ./babs-data
+```
